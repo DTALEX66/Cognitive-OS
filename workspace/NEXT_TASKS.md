@@ -75,11 +75,23 @@
 | --- | --- |
 | 单元测试 | `python -m unittest discover -s tests` |
 | 编译检查 | `python -m compileall app tests` |
+| 环境检查 | `python scripts/doctor_environment.py --fix --check-files` |
 | Git 状态 | `git status --short` |
 | 差异摘要 | `git diff --stat` |
 | 数据边界 | 不出现未忽略的 runtime data、缓存、数据库、密钥、外部快照 |
 
-## 7. 执行记录
+## 7. 跨设备开发交接
+
+| 项目 | 说明 |
+| --- | --- |
+| 交接文档 | `workspace/DEVELOPMENT_HANDOFF.md` |
+| 继续开发分支 | `codex/integrate-cognitive-runtime` |
+| 新电脑第一步 | `git clone git@github.com:DTALEX66/Cognitive-OS.git` 后切到继续开发分支 |
+| 环境修复 | 先运行 `scripts/setup_env.ps1`，再运行 `scripts/doctor_environment.py --fix --check-files` |
+| 本地快照 | `workspace/local-imports/` 不上传；另一台电脑如需完整快照，必须走单独确认的安全迁移流程 |
+| 编码要求 | 上传前拒绝 UTF-8 解码失败、BOM、替换字符、乱码标记 |
+
+## 8. 执行记录
 
 | 日期 | 执行内容 | 结果 | 后续 |
 | --- | --- | --- | --- |
@@ -87,3 +99,4 @@
 | 2026-06-29 | Round 2：Trace Audit、LessonEngine、eval audit evidence | 18 个测试通过，编译通过，`/run` 返回具体 audit 和 lesson | 下一轮进入 Tool Guard |
 | 2026-06-29 | Round 3：Tool Guard、dry-run/path/high-risk 统一安全门 | 23 个测试通过，编译通过，工具结果包含 guard reasons | 下一轮进入 FSRS/card review loop |
 | 2026-06-29 | Round 4：FSRS/card review loop、学习卡片 API | 28 个测试通过，编译通过，卡片创建/复习/due 查询可用 | 下一轮进入 Teach-back/Rubric 或 Obsidian 输入层 |
+| 2026-06-29 | Round 5：上传编码护栏、环境 doctor、跨设备交接规划 | 30 个测试通过，环境检查通过，SSH remote 与 UTF-8 规则已固化 | 新电脑按 `workspace/DEVELOPMENT_HANDOFF.md` 接手 |

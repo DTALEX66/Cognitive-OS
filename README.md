@@ -11,6 +11,15 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
+For a new Windows development machine, run the repository environment setup first:
+
+```powershell
+.\scripts\setup_env.ps1
+.\.venv\Scripts\python.exe scripts\doctor_environment.py --fix --check-files
+```
+
+The cross-device handoff plan is in `workspace/DEVELOPMENT_HANDOFF.md`.
+
 ## Current API Surface
 
 | Endpoint | Purpose |

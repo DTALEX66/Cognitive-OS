@@ -32,3 +32,8 @@ workspace/imports/
 - Promote assets into the root app only through an Intake Card or implementation task.
 - Do not copy `.git`, databases, caches, build outputs, node_modules, or private data.
 - Keep Obsidian as a partial upstream input source only; it is not the main system.
+
+## Handoff
+
+- `workspace/NEXT_TASKS.md`: current Chinese task list and execution record.
+- `workspace/DEVELOPMENT_HANDOFF.md`: cross-device setup, upload rules, and next development plan.
