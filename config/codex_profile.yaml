@@ -110,6 +110,14 @@ shell_policy:
     commit_requires_user_intent: true
     push_requires_user_intent: true
     force_push: false
+    text_encoding: utf-8-no-bom
+    required_pre_push_checks:
+      - python -m unittest tests.test_encoding_policy
+    reject_text_artifacts:
+      - utf8_decode_error
+      - replacement_character
+      - mojibake_marker
+      - unexpected_bom
 
 network_policy:
   default: local_first

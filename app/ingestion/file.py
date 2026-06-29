@@ -49,7 +49,11 @@ def _read_text(path: Path, max_bytes: int = MAX_FILE_BYTES) -> str:
     if path.stat().st_size > max_bytes:
         raise IngestionError(f'file is too large: {_relative_source(path)}')
 
-    return path.read_text(encoding='utf-8', errors='ignore').strip()
+    data = path.read_bytes()
+    try:
+        return data.decode('utf-8-sig').strip()
+    except UnicodeDecodeError as exc:
+        raise IngestionError(f'file must be valid UTF-8 text: {_relative_source(path)}') from exc
 
 
 def _metadata(path: Path, extra: dict[str, Any] | None = None) -> dict[str, Any]:

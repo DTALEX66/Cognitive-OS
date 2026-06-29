@@ -134,6 +134,14 @@ workflow:
     remote: git@github.com:DTALEX66/Cognitive-OS.git
     branch: main
     force_push: false
+    text_encoding: utf-8-no-bom
+    reject_on:
+      - utf8_decode_error
+      - replacement_character
+      - mojibake_marker
+      - unexpected_bom
+    required_checks:
+      - python -m unittest tests.test_encoding_policy
 
 routing:
   routes:

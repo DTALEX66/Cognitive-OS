@@ -1,4 +1,4 @@
-﻿# Cognitive-OS Workspace
+# Cognitive-OS Workspace
 
 This workspace keeps reusable assets from the two source projects without mixing them directly into the runnable app.
 

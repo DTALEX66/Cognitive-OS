@@ -75,6 +75,10 @@ Upload policy:
 - Do not commit or push unrelated local changes.
 - Do not force push.
 - Commit messages should describe the functional scope.
+- Repository text files must be UTF-8 without BOM.
+- Do not use lossy text handling such as `errors="ignore"` for upload-critical reads.
+- Before upload, run the encoding audit test and reject files that fail UTF-8 decoding or contain replacement characters/mojibake markers.
+- On Windows, do not trust garbled PowerShell display alone; verify bytes with an explicit UTF-8 reader before rewriting text.
 
 ## 5. Network Rules
 
