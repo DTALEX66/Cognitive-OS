@@ -3,8 +3,8 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-TEXT_SUFFIXES = {'.py', '.md', '.yaml', '.yml', '.toml', '.json', '.txt'}
-TEXT_FILENAMES = {'.gitignore'}
+TEXT_SUFFIXES = {'.py', '.md', '.yaml', '.yml', '.toml', '.json', '.txt', '.ps1', '.bat'}
+TEXT_FILENAMES = {'.gitignore', '.gitattributes', 'Dockerfile'}
 SKIP_DIRS = {
     '.git',
     '.venv',

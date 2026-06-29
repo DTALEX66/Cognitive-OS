@@ -97,6 +97,8 @@ safety_policy:
 shell_policy:
   default_shell: powershell
   prefer_search_tool: rg
+  powershell_text_reading: Get-Content -Encoding UTF8
+  avoid_powershell_text_writes_for_repo_files: true
   before_modification:
     - git status --short
   after_modification:

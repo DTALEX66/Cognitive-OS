@@ -123,6 +123,7 @@ workflow:
     - run_git_status_short
     - read_relevant_files
     - keep_scope_small
+    - use_explicit_utf8_when_reading_repository_text
   after_edit:
     - run_minimal_validation
     - run_git_diff_stat
@@ -142,6 +143,9 @@ workflow:
       - unexpected_bom
     required_checks:
       - python -m unittest tests.test_encoding_policy
+    powershell_rules:
+      - use_get_content_encoding_utf8
+      - avoid_powershell_text_writes_unless_utf8_no_bom_is_verified
 
 routing:
   routes:

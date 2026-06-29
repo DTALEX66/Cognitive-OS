@@ -79,6 +79,17 @@ Upload policy:
 - Do not use lossy text handling such as `errors="ignore"` for upload-critical reads.
 - Before upload, run the encoding audit test and reject files that fail UTF-8 decoding or contain replacement characters/mojibake markers.
 - On Windows, do not trust garbled PowerShell display alone; verify bytes with an explicit UTF-8 reader before rewriting text.
+- In Windows PowerShell, use `Get-Content -Encoding UTF8` for repository text. Do not use default `Get-Content` for Chinese or mixed-language files.
+- Do not use PowerShell text write commands for repository files unless UTF-8 no-BOM behavior has been verified; prefer Python or editor saves with UTF-8 no BOM.
+- If Git push over HTTPS fails or resets, use the repository SSH remote and run the environment doctor before retrying.
+- Repository-local Git should use `core.autocrlf=false`, `core.eol=lf`, and UTF-8 commit/log encodings.
+
+Environment setup:
+
+```powershell
+.\scripts\setup_env.ps1
+.\.venv\Scripts\python.exe scripts\doctor_environment.py --fix
+```
 
 ## 5. Network Rules
 
