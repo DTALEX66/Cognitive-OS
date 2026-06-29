@@ -37,8 +37,21 @@ information -> attention -> understanding -> structure -> memory -> learning -> 
 - Do not access `E:\` unless the user explicitly confirms the exact path, action, and impact range.
 - Do not upload or print secrets: `.env`, `.codex`, SSH private keys, API keys, tokens, cookies, credentials, or password files.
 - Do not commit runtime memory, local caches, virtual environments, logs, or generated databases.
+- Do not randomly place, copy, export, upload, or scatter repository content, imported snapshots, runtime data, source archives, or user files outside approved project paths.
+- Do not let generated data spill outside project-owned paths such as `data/`, `workspace/local-imports/`, or an explicitly approved output directory.
 - Prefer small, auditable changes that can be reverted with one commit.
 - Do not use destructive actions such as recursive deletion, hard reset, forced push, or mass overwrite unless the user separately confirms scope.
+
+## 3.1 Data Boundary Rules
+
+- Default data posture is local-only, project-contained, and no-egress.
+- Treat `workspace/local-imports/`, `data/`, `.venv/`, `.codex/`, external source snapshots, and imported reference folders as contained local data.
+- Before copying data across roots, state the source path, target path, exclusion rules, and whether the target is ignored by Git.
+- Before creating generated outputs, choose the narrowest approved destination: `data/output/` for runtime output, `workspace/intake/` for planning records, `workspace/local-imports/` for ignored local snapshots, or a user-approved exact path.
+- Exclude secrets, credentials, runtime databases, logs, caches, dependency folders, build outputs, model weights, browser data, and private local state from copied snapshots.
+- Network calls that include local file content, source code, traces, memory records, or imported snapshots require explicit user approval for that exact destination and payload class.
+- Generated files should stay under the current repository or approved temp directories. Do not write to sibling project folders, cloud-sync folders, other drives, or user profile locations without confirmation.
+- If a task needs export or upload, prefer a minimal, redacted artifact over raw folders or broad archives.
 
 ## 4. Git Rules
 
@@ -114,4 +127,3 @@ Codex-specific public configuration is stored in:
 | `workspace/configuration/CODEX.md` | Human-readable Codex configuration guide |
 
 The real `.codex/` directory is private local state and must not be committed.
-

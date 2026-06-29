@@ -180,25 +180,32 @@ large framework dependencies
 
 ---
 
-## 10. Next Action
+## 10. Current Integration Plan
 
-Create the first active Intake Card:
+The active external-project integration plan is:
 
 ```text
-workspace/intake/001_context_pack_scoring.md
+workspace/intake/008_external_project_integration_plan.md
 ```
 
-Goal:
+Current priority order:
 
 ```text
-Add a simple ContextPack score to the current `/run` pipeline using only local, deterministic signals.
+1. Stabilize API smoke tests and ContextPack scoring.
+2. Promote KnowledgeBase B-line trace audit and MachineLesson logic.
+3. Strengthen tool guard and dry-run policy.
+4. Add FSRS/card review loop from KnowledgeBase.
+5. Add Obsidian ingestion profile and later OCR sidecar integration.
 ```
 
-Acceptance:
+Every imported source must still pass the promotion workflow:
 
 ```text
-/run returns context.score > 0 for matched memory
-score reasons are explainable
-no external network or heavy vector dependency
-trace still writes successfully
+Imported Reference
+  -> Intake Card
+  -> Contract Mapping
+  -> Minimal Runtime Patch
+  -> Local Verification
+  -> Trace / Memory Check
+  -> Stable or Experimental Label
 ```

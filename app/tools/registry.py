@@ -1,6 +1,7 @@
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
+from app.tools.guard import ToolGuardDecision, guard_tool_request
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SAFE_OUTPUT_DIR = PROJECT_ROOT / "data" / "output"
@@ -47,13 +48,21 @@ def list_tools() -> list[dict[str, Any]]:
     return [asdict(spec) for spec in TOOL_REGISTRY.values()]
 
 
-def _base_result(spec: ToolSpec, dry_run: bool, status: str = "ok") -> dict[str, Any]:
-    return {
+def _base_result(
+    spec: ToolSpec,
+    dry_run: bool,
+    status: str = "ok",
+    guard: ToolGuardDecision | None = None,
+) -> dict[str, Any]:
+    result = {
         "tool": spec.name,
         "risk_level": spec.risk_level,
         "dry_run": dry_run,
         "status": status,
     }
+    if guard is not None:
+        result["guard"] = guard.as_metadata()
+    return result
 
 
 def _resolve_inside_project(path_value: str) -> Path | None:
@@ -65,16 +74,16 @@ def _resolve_inside_project(path_value: str) -> Path | None:
         return None
 
 
-def echo_tool(payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
+def echo_tool(payload: dict[str, Any], dry_run: bool, guard: ToolGuardDecision | None = None) -> dict[str, Any]:
     spec = TOOL_REGISTRY["echo"]
-    result = _base_result(spec, dry_run)
+    result = _base_result(spec, dry_run, guard=guard)
     result["message"] = f"executed: {payload.get('name', payload)}"
     return result
 
 
-def file_read_tool(payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
+def file_read_tool(payload: dict[str, Any], dry_run: bool, guard: ToolGuardDecision | None = None) -> dict[str, Any]:
     spec = TOOL_REGISTRY["file_read"]
-    result = _base_result(spec, dry_run)
+    result = _base_result(spec, dry_run, guard=guard)
     requested = str(payload.get("path", ""))
     target = _resolve_inside_project(requested)
     if target is None:
@@ -90,9 +99,9 @@ def file_read_tool(payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
     return result
 
 
-def safe_write_tool(payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
+def safe_write_tool(payload: dict[str, Any], dry_run: bool, guard: ToolGuardDecision | None = None) -> dict[str, Any]:
     spec = TOOL_REGISTRY["safe_write"]
-    result = _base_result(spec, dry_run)
+    result = _base_result(spec, dry_run, guard=guard)
     filename = str(payload.get("filename", "output.txt")).replace("..", "_")
     content = str(payload.get("content", ""))
     target = (SAFE_OUTPUT_DIR / filename).resolve()
@@ -113,9 +122,9 @@ def safe_write_tool(payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
     return result
 
 
-def code_exec_tool(payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
+def code_exec_tool(payload: dict[str, Any], dry_run: bool, guard: ToolGuardDecision | None = None) -> dict[str, Any]:
     spec = TOOL_REGISTRY["code_exec"]
-    result = _base_result(spec, True, status="blocked")
+    result = _base_result(spec, True, status="blocked", guard=guard)
     result["code_preview"] = str(payload.get("code", ""))[:200]
     result["error"] = "code execution is blocked in Phase 1; dry-run preview only"
     return result
@@ -132,20 +141,35 @@ def run_tool(name: str, payload: dict[str, Any], dry_run: bool | None = None) ->
             "error": "unknown tool",
         }
 
-    effective_dry_run = spec.default_dry_run if dry_run is None else bool(dry_run)
+    guard = guard_tool_request(
+        spec,
+        payload,
+        dry_run,
+        project_root=PROJECT_ROOT,
+        safe_output_dir=SAFE_OUTPUT_DIR,
+    )
+    effective_dry_run = guard.effective_dry_run
+    if not guard.allowed:
+        result = _base_result(spec, effective_dry_run, status=guard.status, guard=guard)
+        result["error"] = "; ".join(guard.reasons)
+        if name == "code_exec":
+            result["code_preview"] = str(payload.get("code", ""))[:200]
+        return result
+
     if name == "echo":
-        return echo_tool(payload, effective_dry_run)
+        return echo_tool(payload, effective_dry_run, guard)
     if name == "file_read":
-        return file_read_tool(payload, effective_dry_run)
+        return file_read_tool(payload, effective_dry_run, guard)
     if name == "safe_write":
-        return safe_write_tool(payload, effective_dry_run)
+        return safe_write_tool(payload, effective_dry_run, guard)
     if name == "code_exec":
-        return code_exec_tool(payload, True)
+        return code_exec_tool(payload, True, guard)
 
     return {
         "tool": name,
         "risk_level": spec.risk_level,
         "dry_run": effective_dry_run,
         "status": "error",
+        "guard": guard.as_metadata(),
         "error": "tool registered without handler",
     }

@@ -1,12 +1,16 @@
 from app.schemas import ExecutionTrace, EvalResult
+from app.evaluation.trace_audit import audit_trace
 
 
 def evaluate(trace: ExecutionTrace) -> EvalResult:
-    success = bool(trace.success)
-    score = 1.0 if success else 0.0
+    audit = audit_trace(trace)
+    improvement = '; '.join(audit.recommendations)
     return EvalResult(
-        success=success,
-        score=score,
-        failure_reason="" if success else "execution failed",
-        improvement="replace stubs with real tools and add stronger checks" if success else "inspect trace events",
+        success=audit.success,
+        score=audit.score,
+        failure_reason=audit.failure_reason,
+        improvement=improvement,
+        issues=audit.issues,
+        recommendations=audit.recommendations,
+        audit=audit.evidence,
     )

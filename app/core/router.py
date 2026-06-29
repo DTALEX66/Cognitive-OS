@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Literal
 
 from app.schemas import AttentionDecision, CoreObject
+from app.ingestion.quality import ContentQuality, assess_content_quality
 
 RouteName = Literal['KB', 'IR', 'TASK']
 
@@ -25,14 +26,14 @@ LOW_VALUE_TEXTS = {
 COMMAND_MARKERS = [
     '请', '帮我', '给我', '把', '按照', '开始', '继续', '执行', '运行', '修复', '实现',
     '生成', '写', '整理', '转成', '转换', '抽取', '提取', '产出', '输出',
-    'create', 'build', 'fix', 'run', 'execute',
+    'create', 'build', 'fix', 'run', 'execute', 'continue', 'implement',
 ]
 
 ROUTE_KEYWORDS: dict[RouteName, list[str]] = {
     'TASK': [
         '执行', '运行', '修改', '生成', '部署', '修复', '打包', '写代码', '任务', '行动', '流程',
         '转成', '转换', '抽取', '提取', '产出', '输出', 'codex', 'agent', 'task', 'action',
-        'plan', 'execute', 'build', 'fix', 'generate', 'workflow',
+        'plan', 'execute', 'build', 'fix', 'generate', 'workflow', 'implement',
     ],
     'IR': [
         '调研', '研究', 'github', '项目', '论文', '开源', '对比', '框架', '方案', '竞品', '资料源',
@@ -86,6 +87,21 @@ def _length_signal(text: str) -> float:
     if not text.strip():
         return 0.0
     return min(len(text.strip()) / 1200, 1.0)
+
+
+def _quality_signal(doc: CoreObject) -> ContentQuality:
+    score = doc.metadata.get('quality_score')
+    issues = doc.metadata.get('quality_issues')
+    looks_blocked = doc.metadata.get('looks_blocked')
+    if isinstance(score, (int, float)) and isinstance(issues, list):
+        return ContentQuality(
+            score=max(0.0, min(float(score), 1.0)),
+            issues=[str(issue) for issue in issues],
+            looks_blocked=bool(looks_blocked),
+        )
+
+    source_type = str(doc.metadata.get('input_type', doc.object_type or 'text'))
+    return assess_content_quality(doc.content or '', source_type=source_type)
 
 
 def _route_signals(doc: CoreObject) -> tuple[
@@ -145,6 +161,25 @@ def route(doc: CoreObject) -> AttentionDecision:
             risk_level='high',
         )
 
+    quality = _quality_signal(doc)
+    if quality.looks_blocked:
+        return AttentionDecision(
+            route='REVIEW',
+            score=max(0.70, round(quality.score, 3)),
+            reasons=[
+                quality.compact_report(),
+                f'length_signal={length_signal:.2f}',
+            ],
+            risk_level='medium',
+        )
+
+    if quality.score <= 0.20:
+        return AttentionDecision(
+            route='DROP',
+            score=round(quality.score, 3),
+            reasons=[quality.compact_report()],
+        )
+
     keyword_matches, source_matches, command_matches, strengths = _route_signals(doc)
     route_name = _select_route(strengths)
     selected_strength = strengths[route_name]
@@ -157,6 +192,8 @@ def route(doc: CoreObject) -> AttentionDecision:
     score = min(round(score, 3), 1.0)
 
     reasons = [f'length_signal={length_signal:.2f}']
+    if quality.issues:
+        reasons.append(quality.compact_report())
     if keyword_matches[route_name]:
         reasons.append(f'{route_name.lower()} keywords: {_compact_terms(keyword_matches[route_name])}')
     if source_matches[route_name]:

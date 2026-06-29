@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 from app.schemas import CoreObject, MachineLesson
+from app.core.text import lexical_terms
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MEMORY_PATH = PROJECT_ROOT / "data" / "memory" / "memory.jsonl"
@@ -29,10 +30,10 @@ def list_memory() -> list[CoreObject]:
 
 def search_memory(query: str, top_k: int = 5) -> list[CoreObject]:
     # Simple v1 lexical search; replace with vector DB later.
-    query_terms = set(query.lower().split())
+    query_terms = lexical_terms(query)
     scored = []
     for item in list_memory():
-        terms = set(item.content.lower().split())
+        terms = lexical_terms(item.content)
         score = len(query_terms & terms)
         if score > 0:
             scored.append((score, item))

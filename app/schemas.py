@@ -65,6 +65,9 @@ class EvalResult(BaseModel):
     score: float
     failure_reason: str = ""
     improvement: str = ""
+    issues: list[str] = Field(default_factory=list)
+    recommendations: list[str] = Field(default_factory=list)
+    audit: dict[str, Any] = Field(default_factory=dict)
 
 
 class MachineLesson(BaseModel):
@@ -73,4 +76,32 @@ class MachineLesson(BaseModel):
     lesson_type: Literal["success", "failure", "anti_pattern", "constraint"]
     future_constraint: str
     evidence_trace_id: str | None = None
+    created_at: str = Field(default_factory=now_iso)
+
+
+class LearningCard(BaseModel):
+    id: str = Field(default_factory=lambda: new_id("card"))
+    front: str
+    back: str
+    source: str = "manual"
+    source_object_id: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    stability: float = 1.0
+    difficulty: float = 5.0
+    interval_seconds: int = 0
+    next_review_at: str = Field(default_factory=now_iso)
+    last_review_at: str | None = None
+    review_count: int = 0
+    lapses: int = 0
+    created_at: str = Field(default_factory=now_iso)
+
+
+class ReviewEvent(BaseModel):
+    id: str = Field(default_factory=lambda: new_id("review"))
+    card_id: str
+    score: float
+    grade: int
+    retrievability: float
+    previous_interval_seconds: int = 0
+    next_interval_seconds: int = 0
     created_at: str = Field(default_factory=now_iso)

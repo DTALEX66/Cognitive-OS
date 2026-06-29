@@ -72,6 +72,32 @@ safety:
     protected_drive_requires_confirmation:
       - E:/
     no_recursive_whole_disk_scan: true
+  data_boundary_policy:
+    default_posture: local_only_project_contained_no_egress
+    approved_write_roots:
+      - data/output
+      - data/memory
+      - data/logs
+      - workspace/intake
+      - workspace/local-imports
+      - tests/fixtures
+    require_confirmation_before_writing:
+      - sibling_project_directories
+      - external_drive_roots
+      - cloud_sync_directories
+      - user_profile_directories
+      - source_project_original_directories
+    copy_requirements:
+      - state_source_path
+      - state_target_path
+      - state_exclusion_rules
+      - state_git_ignore_status
+    no_unapproved_network_egress_for:
+      - local_file_content
+      - source_code
+      - runtime_memory
+      - traces
+      - imported_snapshots
   secrets_policy:
     never_commit:
       - .env

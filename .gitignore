@@ -20,6 +20,9 @@ data/output/
 *.sqlite
 *.sqlite3
 
+# Local-only imported source snapshots
+workspace/local-imports/
+
 # Node / frontend references
 node_modules/
 .next/

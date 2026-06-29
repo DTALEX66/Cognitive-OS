@@ -10,6 +10,14 @@ from app.core.trace import log_trace, list_traces
 from app.evaluation.evaluator import evaluate
 from app.evaluation.feedback import compile_lesson
 from app.ingestion.file import IngestionError, ingest_directory, ingest_file
+from app.learning.cards import (
+    create_card,
+    create_card_from_document,
+    due_cards,
+    list_cards,
+    list_review_events,
+    review_learning_card,
+)
 from app.tools.registry import list_tools
 
 app = FastAPI(title='Cognitive OS v2', version='0.2.0')
@@ -132,3 +140,61 @@ def traces():
 @app.get('/memory/lessons')
 def lessons():
     return {'items': list_lessons()}
+
+
+@app.post('/learning/cards')
+def learning_cards_create(payload: dict):
+    metadata = payload.get('metadata')
+    if not isinstance(metadata, dict):
+        metadata = {}
+
+    front = str(payload.get('front', '')).strip()
+    back = str(payload.get('back', '')).strip()
+    content = str(payload.get('content', '')).strip()
+
+    if front and back:
+        card = create_card(
+            front,
+            back,
+            source=str(payload.get('source', 'manual')),
+            source_object_id=payload.get('source_object_id'),
+            metadata=metadata,
+        )
+        return {'card': card}
+
+    doc = ingest({'content': content or back or front, 'source': payload.get('source', 'manual'), 'metadata': metadata})
+    decision = route(doc)
+    doc.attention_score = decision.score
+    doc.route = decision.route
+    if decision.route == 'DROP':
+        raise HTTPException(status_code=400, detail='content is too low-value to create a learning card')
+    card = create_card_from_document(doc, front=front or None, back=back or None)
+    return {'card': card, 'route': decision}
+
+
+@app.get('/learning/cards')
+def learning_cards_list():
+    return {'items': list_cards()}
+
+
+@app.post('/learning/review')
+def learning_review(payload: dict):
+    card_id = str(payload.get('card_id', ''))
+    if not card_id:
+        raise HTTPException(status_code=400, detail='card_id is required')
+    try:
+        score = float(payload.get('score', 0.0))
+        card, event = review_learning_card(card_id, score)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return {'card': card, 'event': event}
+
+
+@app.get('/learning/due')
+def learning_due():
+    return {'items': due_cards()}
+
+
+@app.get('/learning/reviews')
+def learning_reviews():
+    return {'items': list_review_events()}

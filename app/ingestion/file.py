@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from app.schemas import CoreObject
+from app.ingestion.quality import assess_content_quality
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_EXTENSIONS = {'.md', '.markdown', '.txt'}
@@ -69,12 +70,15 @@ def ingest_file(path: str, source: str | None = None, metadata: dict[str, Any] |
     resolved = _resolve_project_path(path)
     content = _read_text(resolved)
     source_name = source or _relative_source(resolved)
+    quality = assess_content_quality(content, source_type='file')
+    metadata_data = _metadata(resolved, metadata)
+    metadata_data.update(quality.metadata())
 
     return CoreObject(
         object_type='document',
         content=content,
         source=source_name,
-        metadata=_metadata(resolved, metadata),
+        metadata=metadata_data,
     )
 
 

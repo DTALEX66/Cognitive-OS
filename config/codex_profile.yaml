@@ -34,6 +34,26 @@ workspace:
   protected_drives:
     - E:/
   protected_drive_policy: explicit_user_confirmation_required_before_any_access
+  data_boundary_policy:
+    default_posture: local_only_project_contained_no_egress
+    approved_write_roots:
+      - data/output
+      - data/memory
+      - data/logs
+      - workspace/intake
+      - workspace/local-imports
+      - tests/fixtures
+    require_confirmation_before_writing:
+      - sibling_project_directories
+      - external_drive_roots
+      - cloud_sync_directories
+      - user_profile_directories
+      - source_project_original_directories
+    copy_requirements:
+      - state_source_path
+      - state_target_path
+      - state_exclusion_rules
+      - state_git_ignore_status
 
 repository_context:
   main_repo:
