@@ -1,0 +1,7 @@
+models:
+  default_llm:
+    provider: stub
+    name: local-stub
+  embedding:
+    provider: simple
+    name: hash-embedding

@@ -1,0 +1,15 @@
+app:
+  name: cognitive-os-v2
+  environment: dev
+
+attention:
+  kb_threshold: 0.30
+  task_threshold: 0.75
+  review_threshold: 0.90
+
+execution:
+  default_mode: dry_run
+  allowed_write_dir: data/output
+
+memory:
+  backend: jsonl

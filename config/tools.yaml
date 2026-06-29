@@ -1,0 +1,10 @@
+tools:
+  echo:
+    risk: low
+  file_read:
+    risk: low
+  safe_write:
+    risk: medium
+  code_exec:
+    risk: high
+    default: dry_run
