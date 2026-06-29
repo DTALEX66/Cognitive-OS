@@ -105,3 +105,14 @@ class ReviewEvent(BaseModel):
     previous_interval_seconds: int = 0
     next_interval_seconds: int = 0
     created_at: str = Field(default_factory=now_iso)
+
+
+class TeachBackSession(BaseModel):
+    id: str = Field(default_factory=lambda: new_id("teach"))
+    card_id: str
+    method: str = "feynman"
+    explanation: str
+    total_score: float = 0.0
+    dimension_scores: dict[str, float] = Field(default_factory=dict)
+    gaps: list[str] = Field(default_factory=list)
+    created_at: str = Field(default_factory=now_iso)

@@ -18,6 +18,14 @@ from app.learning.cards import (
     list_review_events,
     review_learning_card,
 )
+from app.learning.rubrics import evaluate as rubric_evaluate, list_rubric_descriptions
+from app.learning.teach_back import (
+    evaluate_session as teach_back_evaluate,
+    list_methods,
+    list_sessions,
+    submit_explanation,
+    weak_points,
+)
 from app.tools.registry import list_tools
 
 app = FastAPI(title='Cognitive OS v2', version='0.2.0')
@@ -198,3 +206,45 @@ def learning_due():
 @app.get('/learning/reviews')
 def learning_reviews():
     return {'items': list_review_events()}
+
+
+# ── Teach-back / Rubric ──────────────────────────────────────────────
+
+
+@app.get('/learning/teach-back/methods')
+def teach_back_methods():
+    return {'methods': list_methods()}
+
+
+@app.post('/learning/teach-back')
+def teach_back_submit(payload: dict):
+    card_id = str(payload.get('card_id', ''))
+    explanation = str(payload.get('explanation', ''))
+    method = str(payload.get('method', 'feynman'))
+    if not card_id or not explanation:
+        raise HTTPException(status_code=400, detail='card_id and explanation are required')
+    session = submit_explanation(card_id, explanation, method=method)
+    return {'session': session}
+
+
+@app.get('/learning/teach-back')
+def teach_back_list(card_id: str | None = None):
+    return {'items': list_sessions(card_id=card_id)}
+
+
+@app.post('/learning/teach-back/evaluate/{session_id}')
+def teach_back_evaluate_endpoint(session_id: str):
+    result = teach_back_evaluate(session_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail=f'teach-back session not found: {session_id}')
+    return {'evaluation': result}
+
+
+@app.get('/learning/weak-points/{card_id}')
+def teach_back_weak_points(card_id: str):
+    return weak_points(card_id)
+
+
+@app.get('/learning/rubrics')
+def learning_rubrics():
+    return {'rubrics': list_rubric_descriptions()}
