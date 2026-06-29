@@ -102,3 +102,16 @@ The following must stay local and must not be committed:
 - `.env`, `.npmrc`, `.pypirc`, cookies, and browser data
 - Local Obsidian vault paths unless the user explicitly chooses a project-local import/export path
 - Runtime `data/`, memory stores, logs, caches, and virtual environments
+
+## 9. Codex Configuration
+
+Codex-specific public configuration is stored in:
+
+| File | Purpose |
+| --- | --- |
+| `config/codex_profile.yaml` | Machine-readable Codex behavior profile |
+| `.codex.example/config.example.toml` | Safe example local config template |
+| `workspace/configuration/CODEX.md` | Human-readable Codex configuration guide |
+
+The real `.codex/` directory is private local state and must not be committed.
+

@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.py[cod]
 *.pyo
@@ -31,3 +31,6 @@ build/
 Thumbs.db
 .vscode/
 .idea/
+
+# Codex local state
+.codex/

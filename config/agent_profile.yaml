@@ -39,6 +39,13 @@ configuration_categories:
       - config/agent_profile.yaml
       - workspace/configuration/README.md
     purpose: public agent operating rules and configuration catalog
+  codex:
+    files:
+      - config/codex_profile.yaml
+      - .codex.example/README.md
+      - .codex.example/config.example.toml
+      - workspace/configuration/CODEX.md
+    purpose: public sanitized Codex behavior profile and local template
   intake:
     files:
       - workspace/intake/*.md
@@ -51,7 +58,7 @@ configuration_categories:
     committed: false
     examples:
       - .env
-      - .codex
+      - .codex/
       - ssh_private_keys
       - api_keys
       - tokens
